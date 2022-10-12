@@ -1,7 +1,7 @@
 const e = require('express');
 const puppeteer = require('puppeteer');
 
-const limit = 45;
+const limit = 10;
 
 async function initBrowser() {
     const browser = await puppeteer.launch();
@@ -36,17 +36,17 @@ async function scrapeListN11(browser) {
 }
 
 async function scrapeProductN11(browser, productLink){
-    page = await browser.newPage();
+    const page = await browser.newPage();
     await page.goto(productLink);
 
     let i = 0;
-    
+    console.log(productLink);
     const product = {
         "model": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="Model"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
         "brand": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="Marka"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
         "os": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="İşletim Sistemi"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
         "processor": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="İşlemci"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
-        "procgen": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="İşlemci Modeli"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split("-")).then(res => res[1].slice(0, -4)),
+        "procgen": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="İşlemci Modeli"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(res.indexOf(' ') + 1)),
         "ram": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="Bellek Kapasitesi"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
         "capacity": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="Disk Kapasitesi"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
         "storage": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="Disk Türü"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
@@ -56,12 +56,44 @@ async function scrapeProductN11(browser, productLink){
         "site": "n11"
     };
 
-    console.log(product);
+    return product;
+}
+
+async function scrapeListVatan(browser) {
+    const page = await browser.newPage();
+    const url = "https://www.vatanbilgisayar.com/notebook/";
+    await page.goto(url);
+
+    let counter = 1;
+    let pagenum = 1;
+    let itemList = [];
+
+    for(let i = 1; i < limit && counter < limit; i++){
+        const [anchor] = await page.$x('//*[@id="productsLoad"]/div['+i+']/div[2]/a');
+        if(anchor === undefined){
+            await page.goto(url+"?page="+(++pagenum));
+            i = 1;
+            continue;
+        }
+        const hrefHandle = anchor.getProperty('href');
+        const href = await hrefHandle.jsonValue();
+        itemList.push(href);
+        
+        counter++;
+    }
+
+    return itemList;
 }
 
 (async () => {
     const browser = await initBrowser();
     const ListN11 = await scrapeListN11(browser);
-    await scrapeProductN11(browser, ListN11[43]);
+    const ListVatan = await scrapeListVatan(browser);
+    let productList = [];
+    for(let i = 0; i < ListN11.length; i++){
+        const product = await scrapeProductN11(browser, ListN11[i]);
+        productList.push(product);
+    }
+    console.log(productList);
     browser.close();
 })();
