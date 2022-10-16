@@ -1,6 +1,14 @@
 const puppeteer = require('puppeteer');
+const mysql = require('mysql');
 
-const limit = 30;
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '1234',
+    database: 'yazlab_test'
+});
+
+const limit = 5;
 
 async function initBrowser() {
     const browser = await puppeteer.launch({ headless: true });
@@ -295,7 +303,91 @@ async function scrapeProductTeknosa(browser, productLink) {
     return product;
 }
 
+function insertN11(itemList){
+    for(let i = 0; i < itemList.length; i++){
+        let res;
+        let bid, pid, oid, rid, cid, stid, scid;
+
+        //check for brand duplicates
+        db.query('SELECT * FROM brands WHERE brand_name = '+itemList[i].brand, (err, result) => {
+            if(err) throw err;
+            res = result;
+        });
+        if(res.length == 0)
+            db.query('INSERT INTO brands (brand_name) VALUES '+itemList[i].brand, (err, result) => {if(err) throw err;});
+        db.query('SELECT brand_id FROM brands WHERE brand_name = '+itemList[i].brand, (err, result) => {
+            if (err) throw err;
+            bid = result[0].brand_id;
+        });
+
+        //check for processor duplicates
+        db.query('SELECT * FROM processors WHERE proc_model = '+itemList[i].processor, (err, result) => {
+            if(err) throw err;
+            res = result;
+        });
+        if(res.length == 0)
+            db.query('INSERT INTO processors (proc_model) VALUES '+itemList[i].processor, (err, result) => {if(err) throw err;});
+        db.query('SELECT proc_id FROM processors WHERE proc_model = '+itemList[i].processor, (err, result) => {
+            if (err) throw err;
+            pid = result[0].proc_id;
+        });
+
+        //check for OS duplicates
+        db.query('SELECT * FROM os WHERE os_name = '+itemList[i].os, (err, result) => {
+            if(err) throw err;
+            res = result;
+        });
+        if(res.length == 0)
+            db.query('INSERT INTO os (os_name) VALUES '+itemList[i].os, (err, result) => {if(err) throw err;});
+        db.query('SELECT os_id FROM os WHERE os_name = '+itemList[i].os, (err, result) => {
+            if (err) throw err;
+            oid = result[0].os_id;
+        });
+
+        //check for ram duplicates
+        db.query('SELECT * FROM ram WHERE ram = '+itemList[i].ram, (err, result) => {
+            if(err) throw err;
+            res = result;
+        });
+        if(res.length == 0)
+            db.query('INSERT INTO ram (ram) VALUES '+itemList[i].ram, (err, result) => {if(err) throw err;});
+        db.query('SELECT ram_id FROM ram WHERE ram = '+itemList[i].ram, (err, result) => {
+            if (err) throw err;
+            rid = result[0].ram_id;
+        });
+
+        //check for capacity duplicates
+        db.query('SELECT * FROM disk_capacity WHERE cap = '+itemList[i].capacity, (err, result) => {
+            if(err) throw err;
+            res = result;
+        });
+        if(res.length == 0)
+            db.query('INSERT INTO disk_capacity (cap) VALUES '+itemList[i].capacity, (err, result) => {if(err) throw err;});
+        db.query('SELECT cap_id FROM disk_capacity WHERE cap = '+itemList[i].capacity, (err, result) => {
+            if (err) throw err;
+            cid = result[0].cap_id;
+        });
+
+        //check for storage duplicates
+        db.query('SELECT * FROM brands WHERE brand_name = '+itemList[i].brand, (err, result) => {
+            if(err) throw err;
+            res = result;
+        });
+        if(res.length == 0)
+            db.query('INSERT INTO brands (brand_name) VALUES '+itemList[i].brand, (err, result) => {if(err) throw err;});
+        db.query('SELECT brand_id FROM brands WHERE brand_name = '+itemList[i].brand, (err, result) => {
+            if (err) throw err;
+            bid = result[0].brand_id;
+        });
+    }
+}
+
 (async () => {
+    db.connect((err) => {
+        if (err) throw err;
+        console.log("MySql connected.");
+    });
+
     const browser = await initBrowser();
     const ListN11 = await scrapeListN11(browser);
     console.log("N11 OK");
