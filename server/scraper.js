@@ -19,7 +19,7 @@ async function initBrowser() {
 async function scrapeListN11(browser) {
     const page = await browser.newPage();
     const url = "https://www.n11.com/bilgisayar/dizustu-bilgisayar";
-    await page.goto(url);
+    await page.goto(url, {timeout: 0, waitUntil: 'networkidle0'});
 
     let counter = 1;
     let pagenum = 1;
@@ -48,6 +48,7 @@ async function scrapeProductN11(browser, productLink){
 
     console.log(productLink);
     const [processor_element] = await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="İşlemci"]/following-sibling::p');
+    if(processor_element === undefined) return null;
     let processor = await page.evaluate(el => el.textContent, processor_element).then(res => res.slice(1));
     if(processor.indexOf(" ") != -1)
         processor = processor.slice(processor.indexOf(" ")+1);
@@ -72,7 +73,8 @@ async function scrapeProductN11(browser, productLink){
         "screen": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="Ekran Boyutu"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(0, -1)).then(res => res.slice(1)),
         "score": await page.$x('//*[@id="unf-p-id"]/div/div[2]/div[2]/div[1]/div/div[2]/div[1]/div[2]/div[1]/strong').then((res) => page.evaluate(el => el.textContent, res[0])),
         "price": price,
-        "site": "n11"
+        "site": "n11",
+        "url": productLink
     };
 
     return product;
@@ -129,7 +131,8 @@ async function scrapeProductVatan(browser, productLink) {
         "screen": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="Ekran Boyutu"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0]),
         "score": await page.$x('//*[@id="topAverageRank"]').then((res) => page.evaluate(el => el.getAttribute('style'), res[0])).then(res => res.split(" ")).then(res => res[1].split("%")).then(res => parseFloat(res[0])/100*5),
         "price": await page.$x('/html/body/main/div/div[4]/div/div/div/div/div[2]//div/div/div[2]/div[1]/span[1]').then(res => page.evaluate(el => el.textContent, res[0])).then(res => res.split(".")).then(res => res[0].concat(res[1])).then(res => parseFloat(res)),
-        "site": "Vatan Bilgisayar"
+        "site": "Vatan Bilgisayar",
+        "url": productLink
     };
 
     return product;
@@ -208,7 +211,8 @@ async function scrapeProductTrendyol(browser, productLink) {
         "screen": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="Ekran Boyutu"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(0, (res.length - res.indexOf(" "))*-1)).then(res => res.split(",")).then(res => res[0]+"."+res[1]),
         "score": score,
         "price": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//span[contains(text(), "TL")]').then(res => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0].split(".")).then(res => res[0].concat(res[1])).then(res => parseFloat(res)),
-        "site": "Trendyol"
+        "site": "Trendyol",
+        "url": productLink
     };
 
     return product;
@@ -297,97 +301,158 @@ async function scrapeProductTeknosa(browser, productLink) {
         "screen": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ekran Boyutu"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ekran Boyutu"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])),
         "score": 0,
         "price": price,
-        "site": "Teknosa"
+        "site": "Teknosa",
+        "url": productLink
     };
     console.log("complete");
     return product;
 }
 
-function insertN11(itemList){
+async function checkDuplicate(attrib, table, column, column_id){
+    return new Promise((resolve, reject) => {
+        try {
+            db.query('SELECT '+column_id+' FROM '+table+' WHERE '+column+' = ?', [attrib], (err, res) => {
+                if (err) return reject(err);
+                if(res.length == 0) return resolve(0);
+                else return resolve(res[0]);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+async function checkProductDuplicate(brand_id, proc_id, ram_id, cap_id, screen_id){
+    return new Promise((resolve, reject) => {
+        try {
+            db.query('SELECT pid FROM products WHERE brand_id = ? AND proc_id = ? AND ram_id = ? AND cap_id = ? AND screen_id = ?', [brand_id, proc_id, ram_id, cap_id, screen_id], (err, res) => {
+                if(err) return reject(err);
+                if(res.length == 0) return resolve(false);
+                else return resolve(true);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+async function checkSiteDuplicate(s_name){
+    return new Promise((resolve, reject) => {
+        try {
+            db.query('SELECT sid FROM sites WHERE s_name = ?', [s_name], (err, res) => {
+                if(err) return reject(err);
+                if(res.length == 0) return resolve(false);
+                else return resolve(res[0].sid);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+async function checkPriceDuplicate(sid, pid){
+    return new Promise((resolve, reject) => {
+        try {
+            db.query('SELECT sid, pid FROM scores_prices WHERE sid = ? AND pid = ?', [sid, pid], (err, res) => {
+                if(err) return reject(err);
+                if(res.length == 0) return resolve(false);
+                else return resolve(true);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+async function getLastProduct(){
+    return new Promise((resolve, reject) => {
+        try {
+            db.query('SELECT MAX(pid) AS maxid FROM products', (err, res) => {
+                if(err) return reject(err);
+                return resolve(res[0].maxid);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+async function insertValues(attrib, table, column){
+    return new Promise((resolve, reject) => {
+        try {
+            db.query('INSERT INTO '+table+'('+column+') VALUES (?)', [attrib], (err, res) => {
+                if (err) return reject(err);
+                return resolve(res);
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+async function insertItem(itemList){
     for(let i = 0; i < itemList.length; i++){
-        let res;
-        let bid, pid, oid, rid, cid, stid, scid;
+        let proc_id = await checkDuplicate(itemList[i].processor, "processors", "proc_model", "proc_id").then(res => res.proc_id);
+        if(!proc_id) await insertValues(itemList[i].processor, "processors", "proc_model");
+        proc_id = await checkDuplicate(itemList[i].processor, "processors", "proc_model", "proc_id").then(res => res.proc_id);
 
-        //check for brand duplicates
-        db.query('SELECT * FROM brands WHERE brand_name = '+itemList[i].brand, (err, result) => {
-            if(err) throw err;
-            res = result;
-        });
-        if(res.length == 0)
-            db.query('INSERT INTO brands (brand_name) VALUES '+itemList[i].brand, (err, result) => {if(err) throw err;});
-        db.query('SELECT brand_id FROM brands WHERE brand_name = '+itemList[i].brand, (err, result) => {
-            if (err) throw err;
-            bid = result[0].brand_id;
-        });
+        let brand_id = await checkDuplicate(itemList[i].brand, "brands", "brand_name", "brand_id").then(res => res.brand_id);
+        if(!brand_id) await insertValues(itemList[i].brand, "brands", "brand_name");
+        brand_id = await checkDuplicate(itemList[i].brand, "brands", "brand_name", "brand_id").then(res => res.brand_id);
 
-        //check for processor duplicates
-        db.query('SELECT * FROM processors WHERE proc_model = '+itemList[i].processor, (err, result) => {
-            if(err) throw err;
-            res = result;
-        });
-        if(res.length == 0)
-            db.query('INSERT INTO processors (proc_model) VALUES '+itemList[i].processor, (err, result) => {if(err) throw err;});
-        db.query('SELECT proc_id FROM processors WHERE proc_model = '+itemList[i].processor, (err, result) => {
-            if (err) throw err;
-            pid = result[0].proc_id;
-        });
+        let os_id = await checkDuplicate(itemList[i].os, "os", "os_name", "os_id").then(res => res.os_id);
+        if(!os_id) await insertValues(itemList[i].os, "os", "os_name");
+        os_id = await checkDuplicate(itemList[i].os, "os", "os_name", "os_id").then(res => res.os_id);
 
-        //check for OS duplicates
-        db.query('SELECT * FROM os WHERE os_name = '+itemList[i].os, (err, result) => {
-            if(err) throw err;
-            res = result;
-        });
-        if(res.length == 0)
-            db.query('INSERT INTO os (os_name) VALUES '+itemList[i].os, (err, result) => {if(err) throw err;});
-        db.query('SELECT os_id FROM os WHERE os_name = '+itemList[i].os, (err, result) => {
-            if (err) throw err;
-            oid = result[0].os_id;
-        });
+        let ram_id = await checkDuplicate(itemList[i].ram, "ram", "ram", "ram_id").then(res => res.ram_id);
+        if(!ram_id) await insertValues(itemList[i].ram, "ram", "ram");
+        ram_id = await checkDuplicate(itemList[i].ram, "ram", "ram", "ram_id").then(res => res.ram_id);
 
-        //check for ram duplicates
-        db.query('SELECT * FROM ram WHERE ram = '+itemList[i].ram, (err, result) => {
-            if(err) throw err;
-            res = result;
-        });
-        if(res.length == 0)
-            db.query('INSERT INTO ram (ram) VALUES '+itemList[i].ram, (err, result) => {if(err) throw err;});
-        db.query('SELECT ram_id FROM ram WHERE ram = '+itemList[i].ram, (err, result) => {
-            if (err) throw err;
-            rid = result[0].ram_id;
-        });
+        let cap_id = await checkDuplicate(itemList[i].capacity, "disk_capacity", "cap", "cap_id").then(res => res.cap_id);
+        if(!cap_id) await insertValues(itemList[i].capacity, "disk_capacity", "cap");
+        cap_id = await checkDuplicate(itemList[i].capacity, "disk_capacity", "cap", "cap_id").then(res => res.cap_id);
 
-        //check for capacity duplicates
-        db.query('SELECT * FROM disk_capacity WHERE cap = '+itemList[i].capacity, (err, result) => {
-            if(err) throw err;
-            res = result;
-        });
-        if(res.length == 0)
-            db.query('INSERT INTO disk_capacity (cap) VALUES '+itemList[i].capacity, (err, result) => {if(err) throw err;});
-        db.query('SELECT cap_id FROM disk_capacity WHERE cap = '+itemList[i].capacity, (err, result) => {
-            if (err) throw err;
-            cid = result[0].cap_id;
-        });
+        let storage_id = await checkDuplicate(itemList[i].storage, "storages", "storage", "storage_id").then(res => res.storage_id);
+        if(!storage_id) await insertValues(itemList[i].storage, "storages", "storage");
+        storage_id = await checkDuplicate(itemList[i].storage, "storages", "storage", "storage_id").then(res => res.storage_id);
 
-        //check for storage duplicates
-        db.query('SELECT * FROM brands WHERE brand_name = '+itemList[i].brand, (err, result) => {
-            if(err) throw err;
-            res = result;
-        });
-        if(res.length == 0)
-            db.query('INSERT INTO brands (brand_name) VALUES '+itemList[i].brand, (err, result) => {if(err) throw err;});
-        db.query('SELECT brand_id FROM brands WHERE brand_name = '+itemList[i].brand, (err, result) => {
-            if (err) throw err;
-            bid = result[0].brand_id;
-        });
+        let screen_id = await checkDuplicate(itemList[i].screen, "screen", "screen_dim", "screen_id").then(res => res.screen_id);
+        if(!screen_id) await insertValues(itemList[i].screen, "screen", "screen_dim");
+        screen_id = await checkDuplicate(itemList[i].screen, "screen", "screen_dim", "screen_id").then(res => res.screen_id);
+
+        const isDuplicate = await checkProductDuplicate(brand_id, proc_id, ram_id, cap_id, screen_id);
+        if(!isDuplicate){
+            db.query('INSERT INTO products(model, brand_id, proc_id, proc_gen, os_id, ram_id, cap_id, storage_id, screen_id) VALUES (?)',
+            [[
+                itemList[i].modelname,
+                brand_id,
+                proc_id,
+                itemList[i].processorgen,
+                os_id,
+                ram_id,
+                cap_id,
+                storage_id,
+                screen_id,
+            ]], (err, res) => {
+                if (err) throw err;
+            });
+        }
+
+        const isSiteDuplicate = await checkSiteDuplicate(itemList[i].site);
+        if(!isSiteDuplicate){
+            db.query('INSERT INTO sites(s_name) VALUES (?)', itemList[i].site, (err, res) => {if(err) throw err;});
+        }
+        const sid = await checkSiteDuplicate(itemList[i].site);
+        const pid = await getLastProduct();
+
+        const isPriceDuplicate = await checkPriceDuplicate(sid, pid);
+        if(!isPriceDuplicate){
+            db.query('INSERT INTO scores_prices VALUES (?)', [[sid, pid, parseFloat(itemList[i].score), itemList[i].price, itemList[i].url]]);
+        }
     }
 }
 
 (async () => {
-    db.connect((err) => {
-        if (err) throw err;
-        console.log("MySql connected.");
-    });
-
     const browser = await initBrowser();
     const ListN11 = await scrapeListN11(browser);
     console.log("N11 OK");
@@ -419,10 +484,15 @@ function insertN11(itemList){
         productListTeknosa.push(product);
     }
 
-    console.log(productListTeknosa);
-    console.log(productListTrendyol);
-    console.log(productListVatan);
-    console.log(productListN11);
+    console.log("Scraped data of all products.");
 
+    db.connect((err) => {
+        if (err) throw err;
+        console.log("MySql connected.");
+    });
+
+    await insertItem(productListN11);
+    console.log("Insertion complete.");
+    db.end();
     browser.close();
 })();
