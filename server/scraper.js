@@ -63,6 +63,7 @@ async function scrapeProductN11(browser, productLink){
 
     const product = {
         "modelname": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="Model"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
+        "img": await page.$x('//*[@id="unf-p-id"]/div/div[2]/div[2]/div[1]/div/div[1]/div[2]/div/a/img').then((res) => res[0].getProperty('src')).then(res => res.jsonValue()),
         "brand": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="Marka"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
         "os": await page.$x('//*[@id="unf-prop"]/div/ul//p[text()="İşletim Sistemi"]/following-sibling::p').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),
         "processor": processor,
@@ -77,6 +78,7 @@ async function scrapeProductN11(browser, productLink){
         "url": productLink
     };
 
+    await page.close();
     return product;
 }
 
@@ -121,11 +123,12 @@ async function scrapeProductVatan(browser, productLink) {
     await page.click('body > main > div > div.wrap-product-info > div.product-info-head > div > ul > li:nth-child(2) > a');
     const product = {
         "modelname": await page.$x('/html/body/main/div/div[1]/div/div/div/ul/li[5]/a').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "img": await page.$x('//*[@id="product-detail"]/div/div[1]/div[2]/a/img').then((res) => res[0].getProperty('srcset')).then(res => res.jsonValue()),
         "brand": brand,
         "os": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="İşletim Sistemi"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])),
         "processor": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="İşlemci Teknolojisi"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.replace('™', '')),
         "processorgen": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="İşlemci Nesli"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])),
-        "ram": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="Ram (Sistem Belleği)"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "ram": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="Ram (Sistem Belleği)"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0]+" GB"),
         "capacity": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="Disk Kapasitesi"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])),
         "storage": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="Disk Türü"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])),
         "screen": await page.$x('//div[@id="urun-ozellikleri"]//td[text()="Ekran Boyutu"]/following-sibling::td/p[1]').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0]),
@@ -135,6 +138,7 @@ async function scrapeProductVatan(browser, productLink) {
         "url": productLink
     };
 
+    await page.close();
     return product;
 }
 
@@ -197,10 +201,19 @@ async function scrapeProductTrendyol(browser, productLink) {
     if(processor.indexOf(" ") != -1)
         processor = processor.slice(processor.indexOf(" ")+1);
 
+    const [screen_element] = await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="Ekran Boyutu"]/following-sibling::span/b');
+    let screen_temp = await page.evaluate(el => el.textContent, screen_element).then(res => res.slice(0, (res.length - res.indexOf(" "))*-1)).then(res => res.split(","));
+    let screen = "";
+    if(screen_temp[1] === undefined)
+        screen = screen_temp[0];
+    else
+        screen = screen_temp[0]+"."+screen_temp[1];
+
     const brandname = await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//div/div/div[1]/h1').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" "));
     console.log(brandname[0]);
     const product = {
         "modelname": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//*[contains(text(), "'+brandname[0]+'")]/parent::*//span').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),             
+        "img": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[1]/div/div[1]/div/div/img').then((res) => res[0].getProperty('src')).then(res => res.jsonValue()),
         "brand": brandname[0],
         "os": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="İşletim Sistemi"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])),
         "processor": processor,
@@ -208,13 +221,14 @@ async function scrapeProductTrendyol(browser, productLink) {
         "ram": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="Ram (Sistem Belleği)"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])),
         "capacity": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="SSD Kapasitesi"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])),
         "storage": "SSD",
-        "screen": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="Ekran Boyutu"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(0, (res.length - res.indexOf(" "))*-1)).then(res => res.split(",")).then(res => res[0]+"."+res[1]),
+        "screen": screen,
         "score": score,
         "price": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//span[contains(text(), "TL")]').then(res => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0].split(".")).then(res => res[0].concat(res[1])).then(res => parseFloat(res)),
         "site": "Trendyol",
         "url": productLink
     };
 
+    await page.close();
     return product;
 }
 
@@ -264,7 +278,7 @@ async function scrapeProductTeknosa(browser, productLink) {
     if(processor.indexOf(" ") != -1)
         processor = processor.slice(processor.indexOf(" ")+1);
 
-    let [capacity_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "Kapasite")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "Kapasite")]/preceding-sibling::*)+1]');
+    let [capacity_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "Toplam Depolama Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "Toplam Depolama Kapasite")]/preceding-sibling::*)+1]');
     let capacity = "";
     let disk_type = "SSD";
     if(capacity_element === undefined){
@@ -291,20 +305,22 @@ async function scrapeProductTeknosa(browser, productLink) {
     console.log(productLink);
     const product = {
         "modelname": await page.$x('//*[@id="pdp-main"]/div[2]/div[1]/h1').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(res.indexOf(" ")+1)),
+        "img": await page.$x('//*[@id="pdp-gallery"]//img').then((res) => res[0].getProperty('srcset')).then(res => res.jsonValue()),
         "brand": await page.$x('//*[@id="pdp-main"]/div[2]/div[1]/h1/b').then((res) => page.evaluate(el => el.textContent, res[0])),
         "os": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="İşletim Sistemi Yazılımı"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="İşletim Sistemi Yazılımı"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])),
         "processor": processor,
         "processorgen": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="İşlemci Nesli"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="İşlemci Nesli"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])).catch(res => "Belirtilmemiş"),
-        "ram": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ram"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ram"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res+" GB"),
+        "ram": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ram"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ram"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])),
         "capacity": capacity,
         "storage": disk_type,
-        "screen": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ekran Boyutu"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ekran Boyutu"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "screen": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ekran Boyutu"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ekran Boyutu"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0]),
         "score": 0,
         "price": price,
         "site": "Teknosa",
         "url": productLink
     };
     console.log("complete");
+    await page.close();
     return product;
 }
 
@@ -392,6 +408,7 @@ async function insertValues(attrib, table, column){
 
 async function insertItem(itemList){
     for(let i = 0; i < itemList.length; i++){
+        console.log(i);
         let proc_id = await checkDuplicate(itemList[i].processor, "processors", "proc_model", "proc_id").then(res => res.proc_id);
         if(!proc_id) await insertValues(itemList[i].processor, "processors", "proc_model");
         proc_id = await checkDuplicate(itemList[i].processor, "processors", "proc_model", "proc_id").then(res => res.proc_id);
@@ -422,9 +439,10 @@ async function insertItem(itemList){
 
         const isDuplicate = await checkProductDuplicate(brand_id, proc_id, ram_id, cap_id, screen_id);
         if(!isDuplicate){
-            db.query('INSERT INTO products(model, brand_id, proc_id, proc_gen, os_id, ram_id, cap_id, storage_id, screen_id) VALUES (?)',
+            db.query('INSERT INTO products(model, img, brand_id, proc_id, proc_gen, os_id, ram_id, cap_id, storage_id, screen_id) VALUES (?)',
             [[
                 itemList[i].modelname,
+                itemList[i].img,
                 brand_id,
                 proc_id,
                 itemList[i].processorgen,
@@ -453,6 +471,11 @@ async function insertItem(itemList){
 }
 
 (async () => {
+    db.connect((err) => {
+        if (err) throw err;
+        console.log("MySql connected.");
+    });
+
     const browser = await initBrowser();
     const ListN11 = await scrapeListN11(browser);
     console.log("N11 OK");
@@ -486,12 +509,11 @@ async function insertItem(itemList){
 
     console.log("Scraped data of all products.");
 
-    db.connect((err) => {
-        if (err) throw err;
-        console.log("MySql connected.");
-    });
-
     await insertItem(productListN11);
+    await insertItem(productListVatan);
+    await insertItem(productListTrendyol);
+    await insertItem(productListTeknosa);
+
     console.log("Insertion complete.");
     db.end();
     browser.close();

@@ -1,22 +1,103 @@
 body {
-  padding-top: 20px;
   margin: 0;
-  background-color: #DBE6FD;
+  background-color: lightgray;
   font-family: 'Mukta', sans-serif;
+  font-size: 14px;
 }
 
 .content-container{
+  padding-top: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
   margin: auto;
-  width: 90%;
+  width: 60%;
   display: grid;
   grid-template-columns: 1fr 4fr;
   grid-column-gap: 10px;
+  background-color: #DBE6FD;
 }
 
 .box{
-  height: 1000px;
+  margin-top: 10px;
+  text-align: left;
   background-color: white;
   border-radius: 0.4em;
+  padding: 10px;
+}
+
+.filter-box{
+  background-color: white;
+  border-radius: 0.4em;
+  min-height: 700px;
+  padding: 0px 10px;
+}
+
+.filter-form{
+  margin-bottom: 30px;
+}
+
+.radio-filter{
+  text-align: left;
+}
+
+.filter-list{
+  text-align: left;
+  color: gray;
+  list-style: square;
+}
+
+.filter-form input{
+  width: 30%;
+}
+
+.products-container{
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-column-gap: 14px;
+  row-gap: 14px;
+}
+
+.product-card-link{
+  text-decoration: none;
+  color: black;
+}
+
+.product-card-link:hover .product-image{
+  background-size: 120%;
+}
+
+.product-card{
+  padding: 10px;
+  background-color: white;
+  border-radius: 0.4em;
+}
+
+.product-image{
+  width: 50%;
+  height: 100px;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  margin: auto;
+  transition: 0.3s;
+}
+
+.product-card table{
+  margin: auto;
+  width: 70%;
+}
+
+.price-site-name{
+  color: #8AC7DB;
+}
+
+.product-model{
+  margin: auto;
+  width: 20ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .slim-bar{
@@ -45,6 +126,58 @@ body {
 
 .link-btn:hover{
   color: #B2AB8C;
+}
+
+.details-container{
+  margin: auto;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 3fr 4fr;
+  grid-column-gap: 10px;
+}
+
+.details-content-container{
+  padding-top: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: auto;
+  background-color: #DBE6FD;
+  width: 60%;
+}
+
+.details-image{
+  width: 100%;
+  height: 30em;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.details-left{
+  padding: 10px;
+  background:white;
+  border-radius: 0.4em;
+}
+
+.details-right{
+  background: white;
+  text-align: left;
+  padding: 10px;
+  border-radius: 0.4em;
+}
+
+.price-table{
+  width: 70%;
+}
+
+.tech-table{
+  width: 80%;
+  margin: auto;
+  text-align: left;
+}
+
+.tech-table td {
+  border-bottom: 1px solid #ddd;
 }
 
 code {
