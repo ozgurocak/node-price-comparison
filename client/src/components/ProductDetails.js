@@ -26,7 +26,7 @@ export const ProductDetails = (props) => {
                                 {prodDetails.map(prod2 => 
                                 <table className="price-table">
                                     <tr>
-                                        <td>{prod2.s_name}</td>
+                                        <td><a href={prod2.url}>{prod2.s_name}</a></td>
                                         <td><b>{prod2.price} TL</b></td>
                                     </tr>
                                 </table>    

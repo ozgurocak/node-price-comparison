@@ -28,7 +28,7 @@ body {
 .filter-box{
   background-color: white;
   border-radius: 0.4em;
-  min-height: 700px;
+  max-height: 1100px;
   padding: 0px 10px;
 }
 
@@ -105,6 +105,10 @@ body {
   border-radius: 0.4em;
   padding: 0.4em 0;
   margin-bottom: 0.6em;
+}
+
+.slim-bar input{
+  margin-top: 10px;
 }
 
 .link-btn-container{

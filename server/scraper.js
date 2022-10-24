@@ -8,7 +8,7 @@ const db = mysql.createConnection({
     database: 'yazlab_test'
 });
 
-const limit = 5;
+const limit = 8;
 
 async function initBrowser() {
     const browser = await puppeteer.launch({ headless: true });
@@ -267,7 +267,8 @@ async function scrapeProductTeknosa(browser, productLink) {
     });
 
     let price = 0;
-    let [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[8]/div//*[contains(text(), "TL")]');
+    //let [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[9]/div//*[contains(text(), "TL")]');
+    let [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[9]/div/div[1]/div/div[1]/div/div/div/span');
     if(price_element === undefined){
         [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[7]/div//*[contains(text(), "TL")]');
     }
@@ -302,6 +303,10 @@ async function scrapeProductTeknosa(browser, productLink) {
         capacity = await page.evaluate(el => el.textContent, capacity_element).then(res => res+" GB");
     }
 
+    const [ram_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ram"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ram"]/preceding-sibling::*)+1]');
+    let ram = await page.evaluate(el => el.textContent, ram_element);
+    if(!ram.includes("GB")) ram = ram.concat(" GB");
+
     console.log(productLink);
     const product = {
         "modelname": await page.$x('//*[@id="pdp-main"]/div[2]/div[1]/h1').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(res.indexOf(" ")+1)),
@@ -310,7 +315,7 @@ async function scrapeProductTeknosa(browser, productLink) {
         "os": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="İşletim Sistemi Yazılımı"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="İşletim Sistemi Yazılımı"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])),
         "processor": processor,
         "processorgen": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="İşlemci Nesli"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="İşlemci Nesli"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])).catch(res => "Belirtilmemiş"),
-        "ram": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ram"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ram"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "ram": ram,
         "capacity": capacity,
         "storage": disk_type,
         "screen": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ekran Boyutu"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ekran Boyutu"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0]),
@@ -380,12 +385,12 @@ async function checkPriceDuplicate(sid, pid){
     });
 }
 
-async function getLastProduct(){
+async function getProductID(brand_id, ram_id, proc_id, cap_id, screen_id){
     return new Promise((resolve, reject) => {
         try {
-            db.query('SELECT MAX(pid) AS maxid FROM products', (err, res) => {
+            db.query('SELECT pid FROM products WHERE brand_id = ? AND proc_id = ? AND ram_id = ? AND cap_id = ? AND screen_id = ?', [brand_id, proc_id, ram_id, cap_id, screen_id], (err, res) => {
                 if(err) return reject(err);
-                return resolve(res[0].maxid);
+                return resolve(res[0].pid);
             });
         } catch (e) {
             reject(e);
@@ -461,7 +466,7 @@ async function insertItem(itemList){
             db.query('INSERT INTO sites(s_name) VALUES (?)', itemList[i].site, (err, res) => {if(err) throw err;});
         }
         const sid = await checkSiteDuplicate(itemList[i].site);
-        const pid = await getLastProduct();
+        const pid = await getProductID(brand_id, ram_id, proc_id, cap_id, screen_id);
 
         const isPriceDuplicate = await checkPriceDuplicate(sid, pid);
         if(!isPriceDuplicate){

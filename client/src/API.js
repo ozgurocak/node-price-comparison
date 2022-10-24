@@ -63,6 +63,11 @@ export async function getProductsFiltered(min_price, max_price, brand_id, ram_id
     return await Axios.get("/getproductsfiltered?"+query);
 }
 
+export async function getSearchResults(search_string){
+    return await Axios.get("/searchresults?search_string="+search_string);
+
+}
+
 export async function getProductDetails(product_id){
     return await Axios.get("/getproductdetails?product_id="+product_id);
 }

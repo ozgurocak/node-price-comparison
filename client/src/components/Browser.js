@@ -9,6 +9,7 @@ export const Browser = () => {
     const [osList, setOsList] = useState([]);
     const [capList, setCapList] = useState([]);
     const [storageList, setStorageList] = useState([]);
+    const [searchstr, setSearchStr] = useState("");
 
     const navigate = useNavigate();
 
@@ -35,6 +36,11 @@ export const Browser = () => {
             search: `?${createSearchParams(params)}`
         });
     }
+
+    const handleSearch = (e) => {
+        const navstr = "/browse/products/search/"+searchstr;
+        navigate(navstr);
+    };
 
     return(
     <div className="content-container">
@@ -96,7 +102,11 @@ export const Browser = () => {
               <a className="link-btn" href="/browse/products/lowestscore">En Düşük Skor</a>
               <a className="link-btn" href="/browse/products/highestscore">En Yüksek Skor</a>
             </div>
-            </div>
+            <form onSubmit={handleSearch}>
+                <input type="text" placeholder="Ürün ara..." value={searchstr} onChange={val => setSearchStr(val.target.value)}/>
+                <input type="submit" value="Ara" />
+            </form>
+          </div>
             <Outlet />
         </div>
     </div>

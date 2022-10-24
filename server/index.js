@@ -19,7 +19,7 @@ db.connect((err) => {
 });
 
 app.get("/getproducts", async(req, res) => {
-    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id';
+    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY p.pid';
     let query = db.query(sql, (err, results) => {
         if (err) throw err;
         res.send(results);
@@ -132,6 +132,14 @@ app.get("/getproductsfiltered", async(req, res) => {
 
 app.get("/getproductdetails", async(req, res) => {
     let sql = 'SELECT DISTINCT p.model, p.img, p.proc_gen, b.brand_name, pr.proc_model, r.ram, o.os_name, c.cap, st.storage, sc.screen_dim, sp.price, sp.score, sp.url, si.s_name FROM products p, brands b, processors pr, ram r, os o, disk_capacity c, storages st, screen sc, scores_prices sp, sites si WHERE si.sid = sp.sid AND p.brand_id = b.brand_id AND p.proc_id = pr.proc_id AND p.ram_id = r.ram_id AND p.os_id = o.os_id AND p.cap_id = c.cap_id AND p.screen_id = sc.screen_id AND p.storage_id = st.storage_id AND p.pid = sp.pid AND p.pid = '+req.query.product_id;
+    let query = db.query(sql, (err, results) => {
+        if (err) throw err;
+        res.send(results);
+    });
+});
+
+app.get("/searchresults", async(req, res) => {
+    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id AND LOWER(p.model) LIKE "%'+ req.query.search_string +'%"';
     let query = db.query(sql, (err, results) => {
         if (err) throw err;
         res.send(results);
