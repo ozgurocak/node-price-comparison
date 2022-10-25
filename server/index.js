@@ -18,8 +18,19 @@ db.connect((err) => {
     console.log("MySql connected.");
 });
 
+app.get("/getproductcount", async(req, res) => {
+    let sql = 'SELECT COUNT(pid) AS prod_count FROM products';
+    let query = db.query(sql, (err, results) => {
+        if (err) throw err;
+        res.send(results);
+    });
+});
+
 app.get("/getproducts", async(req, res) => {
-    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY p.pid';
+    let page = 0;
+    if (req.query.page === "undefined") page = 0;
+    else page = parseInt(req.query.page); 
+    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY p.pid LIMIT '+(page*30)+',30';
     let query = db.query(sql, (err, results) => {
         if (err) throw err;
         res.send(results);
@@ -27,7 +38,10 @@ app.get("/getproducts", async(req, res) => {
 });
 
 app.get("/getproductshighestprice", async(req, res) => {
-    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY(SELECT MAX(price) FROM scores_prices sp WHERE sp.pid = p.pid) DESC';
+    let page = 0;
+    if (req.query.page === "undefined") page = 0;
+    else page = parseInt(req.query.page); 
+    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY(SELECT MAX(price) FROM scores_prices sp WHERE sp.pid = p.pid) DESC LIMIT '+(page*30)+', 30';
     let query = db.query(sql, (err, results) => {
         if (err) throw err;
         res.send(results);
@@ -35,7 +49,10 @@ app.get("/getproductshighestprice", async(req, res) => {
 });
 
 app.get("/getproductslowestprice", async(req, res) => {
-    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY(SELECT MIN(price) FROM scores_prices sp WHERE sp.pid = p.pid) ASC';
+    let page = 0;
+    if (req.query.page === "undefined") page = 0;
+    else page = parseInt(req.query.page); 
+    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY(SELECT MIN(price) FROM scores_prices sp WHERE sp.pid = p.pid) ASC LIMIT '+(page*30)+', 30';
     let query = db.query(sql, (err, results) => {
         if (err) throw err;
         res.send(results);
@@ -43,7 +60,10 @@ app.get("/getproductslowestprice", async(req, res) => {
 });
 
 app.get("/getproductshighestscore", async(req, res) => {
-    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY(SELECT MAX(score) FROM scores_prices sp WHERE sp.pid = p.pid) DESC';
+    let page = 0;
+    if (req.query.page === "undefined") page = 0;
+    else page = parseInt(req.query.page); 
+    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY(SELECT MAX(score) FROM scores_prices sp WHERE sp.pid = p.pid) DESC LIMIT '+(page*30)+', 30';
     let query = db.query(sql, (err, results) => {
         if (err) throw err;
         res.send(results);
@@ -51,7 +71,10 @@ app.get("/getproductshighestscore", async(req, res) => {
 });
 
 app.get("/getproductslowestscore", async(req, res) => {
-    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY(SELECT MIN(score) FROM scores_prices sp WHERE sp.pid = p.pid) ASC';
+    let page = 0;
+    if (req.query.page === "undefined") page = 0;
+    else page = parseInt(req.query.page); 
+    let sql = 'SELECT DISTINCT p.pid, p.model, p.img, b.brand_name FROM products p, brands b WHERE b.brand_id = p.brand_id ORDER BY(SELECT MIN(score) FROM scores_prices sp WHERE sp.pid = p.pid) ASC LIMIT '+(page*30)+', 30';
     let query = db.query(sql, (err, results) => {
         if (err) throw err;
         res.send(results);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createSearchParams, Outlet, useNavigate } from "react-router-dom";
-import { getBrands, getCapacity, getOs, getProcessors, getRam, getStorages } from "../API";
+import { getBrands, getCapacity, getOs, getProcessors, getProductCount, getRam, getStorages } from "../API";
 
 export const Browser = () => {
     const [brandList, setBrandList] = useState([]);

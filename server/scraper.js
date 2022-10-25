@@ -8,7 +8,7 @@ const db = mysql.createConnection({
     database: 'yazlab_test'
 });
 
-const limit = 8;
+const limit = 20;
 
 async function initBrowser() {
     const browser = await puppeteer.launch({ headless: true });
@@ -223,7 +223,7 @@ async function scrapeProductTrendyol(browser, productLink) {
         "storage": "SSD",
         "screen": screen,
         "score": score,
-        "price": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//span[contains(text(), "TL")]').then(res => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0].split(".")).then(res => res[0].concat(res[1])).then(res => parseFloat(res)),
+        "price": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//div/span[contains(text(), "TL")]').then(res => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0].split(".")).then(res => res[0].concat(res[1])).then(res => parseFloat(res)),
         "site": "Trendyol",
         "url": productLink
     };
@@ -268,8 +268,9 @@ async function scrapeProductTeknosa(browser, productLink) {
 
     let price = 0;
     //let [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[9]/div//*[contains(text(), "TL")]');
-    let [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[9]/div/div[1]/div/div[1]/div/div/div/span');
+    let [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[8]/div//*[contains(text(), "TL")]');
     if(price_element === undefined){
+        console.log("u");
         [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[7]/div//*[contains(text(), "TL")]');
     }
     price = await page.evaluate(el => el.textContent, price_element).then(res => res.split(" ")).then(res => res[0].split(".")).then(res => res[0].concat(res[1])).then(res => parseFloat(res));
@@ -283,16 +284,16 @@ async function scrapeProductTeknosa(browser, productLink) {
     let capacity = "";
     let disk_type = "SSD";
     if(capacity_element === undefined){
-        capacity_element = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "SSD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "SSD Kapasitesi")]/preceding-sibling::*)+1]');     
+        [capacity_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "SSD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "SSD Kapasitesi")]/preceding-sibling::*)+1]');     
         if(capacity_element === undefined){
-            capacity_element = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "HDD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "HDD Kapasitesi")]/preceding-sibling::*)+1]');
+            [capacity_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "HDD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "HDD Kapasitesi")]/preceding-sibling::*)+1]');
             disk_type = "HDD";
             capacity = await page.evaluate(el => el.textContent, capacity_element);
         }
         else{
             capacity = await page.evaluate(el => el.textContent, capacity_element);
             if(capacity == "Yok"){
-                capacity_element = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "HDD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "HDD Kapasitesi")]/preceding-sibling::*)+1]');
+                [capacity_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "HDD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "HDD Kapasitesi")]/preceding-sibling::*)+1]');
                 disk_type = "HDD";
                 capacity = await page.evaluate(el => el.textContent, capacity_element);
             }

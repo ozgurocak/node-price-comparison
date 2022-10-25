@@ -2,24 +2,28 @@ import Axios from "axios"
 
 Axios.defaults.baseURL = "http://localhost:8080";
 
-export async function getProducts(){
-    return await Axios.get("/getproducts");
+export async function getProductCount(){
+    return await Axios.get("/getproductcount");
 }
 
-export async function getProductsHP(){
-    return await Axios.get("/getproductshighestprice");
+export async function getProducts(page_num){
+    return await Axios.get("/getproducts?page="+page_num);
 }
 
-export async function getProductsLP(){
-    return await Axios.get("/getproductslowestprice");
+export async function getProductsHP(page_num){
+    return await Axios.get("/getproductshighestprice?page="+page_num);
 }
 
-export async function getProductsHS(){
-    return await Axios.get("/getproductshighestscore");
+export async function getProductsLP(page_num){
+    return await Axios.get("/getproductslowestprice?page="+page_num);
 }
 
-export async function getProductsLS(){
-    return await Axios.get("/getproductslowestscore");
+export async function getProductsHS(page_num){
+    return await Axios.get("/getproductshighestscore?page="+page_num);
+}
+
+export async function getProductsLS(page_num){
+    return await Axios.get("/getproductslowestscore?page="+page_num);
 }
 
 export async function getProductData(product_id){
