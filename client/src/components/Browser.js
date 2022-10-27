@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createSearchParams, Outlet, useNavigate } from "react-router-dom";
-import { getBrands, getCapacity, getOs, getProcessors, getProductCount, getRam, getStorages } from "../API";
+import { getBrands, getCapacity, getOs, getProcessors, getProductCount, getRam, getSites, getStorages } from "../API";
 
 export const Browser = () => {
     const [brandList, setBrandList] = useState([]);
@@ -9,6 +9,7 @@ export const Browser = () => {
     const [osList, setOsList] = useState([]);
     const [capList, setCapList] = useState([]);
     const [storageList, setStorageList] = useState([]);
+    const [siteList, setSiteList] = useState([]);
     const [searchstr, setSearchStr] = useState("");
 
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export const Browser = () => {
         getProcessors().then(res => setProcList(res.data));
         getCapacity().then(res => setCapList(res.data));
         getStorages().then(res => setStorageList(res.data));
+        getSites().then(res => setSiteList(res.data));
     }, []);
 
     const handleFilter = (event) => {
@@ -90,6 +92,14 @@ export const Browser = () => {
                     <input type="radio" id={item.storage_id} value={item.storage_id} name="storage_filter" />
                     <label for={item.storage_id}>{item.storage}</label>
                 </div>
+                )}
+                <hr />
+                <h3 style={{textAlign: "left"}}>Site</h3>
+                {siteList.map(item => 
+                <div className="radio-filter">
+                    <input type="radio" id={item.sid} value={item.sid} name="site_filter" />
+                    <label for={item.sid}>{item.s_name}</label>
+                </div>    
                 )}
                 <input type="reset"/>
             </form>

@@ -54,7 +54,11 @@ export async function getStorages(){
     return await Axios.get("/getstorages");
 }
 
-export async function getProductsFiltered(min_price, max_price, brand_id, ram_id, proc_id, cap_id, storage_id){
+export async function getSites(){
+    return await Axios.get("/getsites");
+}
+
+export async function getProductsFiltered(min_price, max_price, brand_id, ram_id, proc_id, cap_id, storage_id, site_id){
     let query = "";
     query += (min_price !== null) ? ("min_price="+min_price + "&") : "";
     query += (max_price !== null) ? ("max_price="+max_price + "&") : "";
@@ -63,6 +67,7 @@ export async function getProductsFiltered(min_price, max_price, brand_id, ram_id
     query += (proc_id !== null) ? ("proc_id="+proc_id + "&") : "";
     query += (cap_id !== null) ? ("cap_id="+cap_id + "&") : "";
     query += (storage_id !== null) ? ("storage_id="+storage_id + "&") : "";
+    query += (site_id !== null) ? ("site_id="+site_id+ "&") : "";
 
     return await Axios.get("/getproductsfiltered?"+query);
 }

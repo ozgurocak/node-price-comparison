@@ -97,6 +97,14 @@ app.get("/getbrands", async(req, res) => {
     });
 });
 
+app.get("/getsites", async(req, res) => {
+    let sql = 'SELECT * FROM sites';
+    let query = db.query(sql, (err, results) => {
+        if (err) throw err;
+        res.send(results);
+    });
+});
+
 app.get("/getram", async(req, res) => {
     let sql = 'SELECT * FROM ram';
     let query = db.query(sql, (err, results) => {
@@ -146,6 +154,7 @@ app.get("/getproductsfiltered", async(req, res) => {
     if(req.query.proc_id !== undefined) if(req.query.proc_id.length > 0) sql += ' AND p.proc_id = '+req.query.proc_id;
     if(req.query.cap_id !== undefined) if(req.query.cap_id.length > 0) sql += ' AND p.cap_id = '+req.query.cap_id;
     if(req.query.storage_id !== undefined) if(req.query.storage_id.length > 0) sql += ' AND p.storage_id = '+req.query.storage_id;
+    if(req.query.site_id !== undefined) if(req.query.site_id.length > 0) sql += ' AND sp.sid = '+req.query.site_id;
 
     let query = db.query(sql, (err, results) => {
         if (err) throw err;

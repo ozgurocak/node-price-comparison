@@ -8,7 +8,7 @@ export const FilteredProductList = (props) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     useEffect(() => {
-        getProductsFiltered(searchParams.get("min_price"), searchParams.get("max_price"), searchParams.get("brand_filter"), searchParams.get("ram_filter"), searchParams.get("proc_filter"), searchParams.get("cap_filter"), searchParams.get("storage_filter")).then(
+        getProductsFiltered(searchParams.get("min_price"), searchParams.get("max_price"), searchParams.get("brand_filter"), searchParams.get("ram_filter"), searchParams.get("proc_filter"), searchParams.get("cap_filter"), searchParams.get("storage_filter"), searchParams.get("site_filter")).then(
             res => {setProdArray(res.data); console.log(res.data);}
         );
     }, []);
