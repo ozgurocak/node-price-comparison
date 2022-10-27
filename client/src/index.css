@@ -13,6 +13,7 @@ body {
   width: 60%;
   display: grid;
   grid-template-columns: 1fr 4fr;
+  grid-template-rows: minmax(min-content, max-content);
   grid-column-gap: 10px;
   background-color: #DBE6FD;
 }
@@ -28,7 +29,6 @@ body {
 .filter-box{
   background-color: white;
   border-radius: 0.4em;
-  min-height: 700px;
   padding: 0px 10px;
 }
 
@@ -105,6 +105,25 @@ body {
   border-radius: 0.4em;
   padding: 0.4em 0;
   margin-bottom: 0.6em;
+}
+
+.slim-bar input{
+  margin-top: 10px;
+}
+
+.slim-bar a{
+  margin: 10px;
+  text-decoration: none;
+}
+
+.page-button{
+  color: white;
+  background-color: #47597E;
+  padding: 0.3em 0.5em;
+}
+
+.slim-bar a:hover{
+  opacity: 60%;
 }
 
 .link-btn-container{

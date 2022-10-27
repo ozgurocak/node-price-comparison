@@ -8,7 +8,11 @@ const db = mysql.createConnection({
     database: 'yazlab_test'
 });
 
+<<<<<<< HEAD
 const limit = 190;
+=======
+const limit = 20;
+>>>>>>> bad60968958b3a1e7cec8b7847e2ea047841de82
 
 async function initBrowser() {
     const browser = await puppeteer.launch({ headless: true });
@@ -220,6 +224,7 @@ async function scrapeProductTrendyol(browser, productLink) {
 
     const brandname = await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//div/div/div[1]/h1').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" "));
     console.log(brandname[0]);
+<<<<<<< HEAD
     try {
         const product = {
             "modelname": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//*[contains(text(), "'+brandname[0]+'")]/parent::*//span').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),             
@@ -244,6 +249,27 @@ async function scrapeProductTrendyol(browser, productLink) {
         return null;
     }
     
+=======
+    const product = {
+        "modelname": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//*[contains(text(), "'+brandname[0]+'")]/parent::*//span').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(1)),             
+        "img": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[1]/div/div[1]/div/div/img').then((res) => res[0].getProperty('src')).then(res => res.jsonValue()),
+        "brand": brandname[0],
+        "os": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="İşletim Sistemi"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "processor": processor,
+        "processorgen": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="İşlemci Modeli"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "ram": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="Ram (Sistem Belleği)"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "capacity": await page.$x('//*[@id="product-detail-app"]/div/section/div/ul//span[text()="SSD Kapasitesi"]/following-sibling::span/b').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "storage": "SSD",
+        "screen": screen,
+        "score": score,
+        "price": await page.$x('//*[@id="product-detail-app"]/div/div[2]/div[1]/div[2]/div[2]//div/span[contains(text(), "TL")]').then(res => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0].split(".")).then(res => res[0].concat(res[1])).then(res => parseFloat(res)),
+        "site": "Trendyol",
+        "url": productLink
+    };
+
+    await page.close();
+    return product;
+>>>>>>> bad60968958b3a1e7cec8b7847e2ea047841de82
 }
 
 async function scrapeListTeknosa(browser) {
@@ -281,8 +307,10 @@ async function scrapeProductTeknosa(browser, productLink) {
     });
 
     let price = 0;
+    //let [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[9]/div//*[contains(text(), "TL")]');
     let [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[8]/div//*[contains(text(), "TL")]');
     if(price_element === undefined){
+        console.log("u");
         [price_element] = await page.$x('//*[@id="pdp-main"]/div[2]/div[2]/div[7]/div//*[contains(text(), "TL")]');
         if(price_element === undefined) return null;
     }
@@ -297,16 +325,16 @@ async function scrapeProductTeknosa(browser, productLink) {
     let capacity = "";
     let disk_type = "SSD";
     if(capacity_element === undefined){
-        capacity_element = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "SSD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "SSD Kapasitesi")]/preceding-sibling::*)+1]');     
+        [capacity_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "SSD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "SSD Kapasitesi")]/preceding-sibling::*)+1]');     
         if(capacity_element === undefined){
-            capacity_element = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "HDD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "HDD Kapasitesi")]/preceding-sibling::*)+1]');
+            [capacity_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "HDD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "HDD Kapasitesi")]/preceding-sibling::*)+1]');
             disk_type = "HDD";
             capacity = await page.evaluate(el => el.textContent, capacity_element);
         }
         else{
             capacity = await page.evaluate(el => el.textContent, capacity_element);
             if(capacity == "Yok"){
-                capacity_element = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "HDD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "HDD Kapasitesi")]/preceding-sibling::*)+1]');
+                [capacity_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[contains(text(), "HDD Kapasitesi")]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[contains(text(), "HDD Kapasitesi")]/preceding-sibling::*)+1]');
                 disk_type = "HDD";
                 capacity = await page.evaluate(el => el.textContent, capacity_element);
             }
@@ -317,6 +345,10 @@ async function scrapeProductTeknosa(browser, productLink) {
         capacity = await page.evaluate(el => el.textContent, capacity_element).then(res => res+" GB");
     }
 
+    const [ram_element] = await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ram"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ram"]/preceding-sibling::*)+1]');
+    let ram = await page.evaluate(el => el.textContent, ram_element);
+    if(!ram.includes("GB")) ram = ram.concat(" GB");
+
     console.log(productLink);
     const product = {
         "modelname": await page.$x('//*[@id="pdp-main"]/div[2]/div[1]/h1').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.slice(res.indexOf(" ")+1)),
@@ -325,7 +357,7 @@ async function scrapeProductTeknosa(browser, productLink) {
         "os": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="İşletim Sistemi Yazılımı"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="İşletim Sistemi Yazılımı"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])),
         "processor": processor,
         "processorgen": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="İşlemci Nesli"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="İşlemci Nesli"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])).catch(res => "Belirtilmemiş"),
-        "ram": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ram"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ram"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])),
+        "ram": ram,
         "capacity": capacity,
         "storage": disk_type,
         "screen": await page.$x('//*[@id="pdp-technical"]/div/div[1]/div/table[count(//th[text()="Ekran Boyutu"]/parent::*/parent::*/parent::table/preceding-sibling::table)+1]//td[count(//th[text()="Ekran Boyutu"]/preceding-sibling::*)+1]').then((res) => page.evaluate(el => el.textContent, res[0])).then(res => res.split(" ")).then(res => res[0]),
@@ -395,12 +427,12 @@ async function checkPriceDuplicate(sid, pid){
     });
 }
 
-async function getLastProduct(){
+async function getProductID(brand_id, ram_id, proc_id, cap_id, screen_id){
     return new Promise((resolve, reject) => {
         try {
-            db.query('SELECT MAX(pid) AS maxid FROM products', (err, res) => {
+            db.query('SELECT pid FROM products WHERE brand_id = ? AND proc_id = ? AND ram_id = ? AND cap_id = ? AND screen_id = ?', [brand_id, proc_id, ram_id, cap_id, screen_id], (err, res) => {
                 if(err) return reject(err);
-                return resolve(res[0].maxid);
+                return resolve(res[0].pid);
             });
         } catch (e) {
             reject(e);
@@ -478,7 +510,7 @@ async function insertItem(itemList){
             db.query('INSERT INTO sites(s_name) VALUES (?)', itemList[i].site, (err, res) => {if(err) throw err;});
         }
         const sid = await checkSiteDuplicate(itemList[i].site);
-        const pid = await getLastProduct();
+        const pid = await getProductID(brand_id, ram_id, proc_id, cap_id, screen_id);
 
         const isPriceDuplicate = await checkPriceDuplicate(sid, pid);
         if(!isPriceDuplicate){

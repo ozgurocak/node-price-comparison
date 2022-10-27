@@ -23,14 +23,15 @@ export const ProductDetails = (props) => {
                                 <h1>{prod.brand_name} {prod.model}</h1>
                                 <hr />
                                 <h2>Mağaza Fiyatları</h2>
-                                {prodDetails.map(prod2 => 
                                 <table className="price-table">
+                                {prodDetails.map(prod2 => 
                                     <tr>
-                                        <td>{prod2.s_name}</td>
+                                        <td><a href={prod2.url}>{prod2.s_name}</a></td>
                                         <td><b>{prod2.price} TL</b></td>
                                     </tr>
-                                </table>    
+                                    
                                 )}
+                                </table>
                             </div>
                         </div>
             })}
