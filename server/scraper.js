@@ -528,19 +528,19 @@ async function insertItem(itemList){
     });
 
     const browser = await initBrowser();
-    /*const ListN11 = await scrapeListN11(browser);
+    const ListN11 = await scrapeListN11(browser);
     console.log("N11 OK");
     const ListVatan = await scrapeListVatan(browser);
     console.log("Vatan OK");
     const ListTrendyol = await scrapeListTrendyol(browser);
-    console.log("Trendyol OK");*/
+    console.log("Trendyol OK");
     const ListTeknosa = await scrapeListTeknosa(browser);
     console.log("Teknosa OK");
-    /*let productListN11 = [];
-    let productListVatan = [];*/
-    //let productListTrendyol = [];
+    let productListN11 = [];
+    let productListVatan = [];
+    let productListTrendyol = [];
     let productListTeknosa = [];
-    /*for(let i = 0; i < ListN11.length; i++){
+    for(let i = 0; i < ListN11.length; i++){
         const product = await scrapeProductN11(browser, ListN11[i]);
         if(product === null) continue;
         productListN11.push(product);
@@ -554,7 +554,7 @@ async function insertItem(itemList){
         const product = await scrapeProductTrendyol(browser, ListTrendyol[i]);
         if(product === null) continue;
         productListTrendyol.push(product);
-    }*/
+    }
     for(let i = 0; i < ListTeknosa.length; i++){
         const product = await scrapeProductTeknosa(browser, ListTeknosa[i]);
         if(product === null) continue;
@@ -563,9 +563,9 @@ async function insertItem(itemList){
 
     console.log("Scraped data of all products.");
 
-    /*await insertItem(productListN11);
+    await insertItem(productListN11);
     await insertItem(productListVatan);
-    await insertItem(productListTrendyol);*/
+    await insertItem(productListTrendyol);
     await insertItem(productListTeknosa);
 
     console.log("Insertion complete.");
