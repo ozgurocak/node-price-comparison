@@ -4,6 +4,17 @@ This project is a web app for comparing laptop prices that have been scraped fro
 
 This project was developed as an assignment for Yazılım Laboratuvarı I course of the Computer Engineering programme in Kocaeli University.
 
+### Table of contents
+- [E-Commerce App for Laptop Price Comparison](#e-commerce-app-for-laptop-price-comparison)
+    - [Table of contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Usage](#usage)
+    - [Installation](#installation)
+    - [Running](#running)
+  - [Other Information](#other-information)
+    - [Technical Information](#technical-information)
+    - [Developers](#developers)
+
 ## Overview
 
 Scraped laptops can be viewed from the web app. Products can be categorized and listed in different ways (for example, from highest price to the lowest or *vice versa*) for browsing.
